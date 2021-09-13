@@ -20,7 +20,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 	public void testJobMethod() {
 		log.info("Job Test.......................");
 	}
-
+ 
 	@Override
 	public void testInsertJobMethod() {
 		log.info("testInsertJobMethod() start..........................");
