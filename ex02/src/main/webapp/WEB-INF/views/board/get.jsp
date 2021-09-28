@@ -50,9 +50,28 @@
 	                          	<input type="hidden" name="type" value="${cri.type }">
                             	<input type="hidden" name="keyword" value="${cri.keyword }">
 	                          </form>
+
+<script type="text/javascript" src="/resources/js/reply.js"></script>
+<script>
+
+console.log("===========");
+console.log("JS TEST");
+
+var bnoValue = '<c:out value="${board.bno}"/>';
+
+//for replyService add test
+replyService.add(
+		{reply:"JS Test", replayer: "tester", bno : bnoValue},
+		function (result){
+			alert("result : " + result);	
+		}
+);
+
+</script>
 	                          
 <script>
 $(document).ready(function(){
+	
 	var actionForm = $("#actionForm");
 	
 	

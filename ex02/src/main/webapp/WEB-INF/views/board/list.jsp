@@ -48,21 +48,23 @@
                                       </tbody>
                             </table>
                             <!-- /.table-responsive -->
-                            <form id="searchForm" action="/board/list" method="get">
-                            	<select name="type">
-                            		<option value="" ${pageMaker.cri.type == null? "selected" : "" }>---</option>
-                            		<option value="T" ${pageMaker.cri.type eq 'T'? "selected" : "" }>제목</option>
-                            		<option value="C" ${pageMaker.cri.type eq 'C'? "selected" : "" }>내용</option>
-                            		<option value="W" ${pageMaker.cri.type eq 'W'? "selected" : "" }>작성자</option>
-                            		<option value="TC" ${pageMaker.cri.type eq 'TC'? "selected" : "" }>제목+내용</option>
-                            		<option value="TCW" ${pageMaker.cri.type eq 'TCW'? "selected" : "" }>제목+내용+작성자</option>
-                            	</select>
-                            	<input type="text" name="keyword" value="${pageMaker.cri.keyword}">
-                            	<input type="hidden" name="pageNum" value="${pageMaker.cri.pageNum}">
-                            	<input type="hidden" name="amount" value="${pageMaker.cri.amount}">
-                            	<button class="btn btn-default">Search</button>
-                            </form>
-                            <div class="pull-right">
+                            <div style="text-align: right;">
+	                            <form id="searchForm" action="/board/list" method="get">
+	                            	<select name="type">
+	                            		<option value="" ${pageMaker.cri.type == null? "selected" : "" }>[선택]</option>
+	                            		<option value="T" ${pageMaker.cri.type eq 'T'? "selected" : "" }>제목</option>
+	                            		<option value="C" ${pageMaker.cri.type eq 'C'? "selected" : "" }>내용</option>
+	                            		<option value="W" ${pageMaker.cri.type eq 'W'? "selected" : "" }>작성자</option>
+	                            		<option value="TC" ${pageMaker.cri.type eq 'TC'? "selected" : "" }>제목+내용</option>
+	                            		<option value="TCW" ${pageMaker.cri.type eq 'TCW'? "selected" : "" }>제목+내용+작성자</option>
+	                            	</select>
+	                            	<input type="text" name="keyword" value="${pageMaker.cri.keyword}">
+	                            	<input type="hidden" name="pageNum" value="${pageMaker.cri.pageNum}">
+	                            	<input type="hidden" name="amount" value="${pageMaker.cri.amount}">
+	                            	<button class="btn btn-default">Search</button>
+	                            </form>
+                            </div>
+                            <div class="pull" style="text-align: center;">
                             	<ul class="pagination">
                             		<c:if test="${pageMaker.prev }">
                             		<li class="page-item">

@@ -27,6 +27,37 @@
 	<mybatis-spring:scan base-package="org.zerock.mapper"/>
 	<context:component-scan base-package="org.zerock.service"></context:component-scan>
 	<context:component-scan base-package="org.zerock.quartz.service"></context:component-scan>
+	
+	<!-- 
+		 크론 표현식에서는 6~7 자리 가 사용됨.
+		 
+		 cron = "* * * * * *"
+	
+		 *        *        *        *        *        *        *
+		 초       	    분                시              일                월              요일            년도(생략가능)
+	
+	        여기서 요일은 1-7, SUN-SAT 로 표현 가능.
+		(1:일, 2:월, 3:화, 4:수, 5:목, 6:금, 7:토 입니다.)
+	
+	         위의 예에서 *(아스타)는 ALL(모든) 것을 의미 함.
+		
+		# 그 밖에 
+		
+		?(물음표) : 특정값이 없을 때(어떤값이든 상관X), 날짜와 요일에만 사용가능
+		
+		-(하이픈) : 범위값을 지정할 때
+		
+		,(콤마) : 여러 값을 지정할 때
+		
+		/(슬러시) : 초기값과 증가치 설정할 때
+		
+		L(대문자 엘) : 지정할 수 있는 범위의 마지막 값 설정할 때, 날짜와 요일에만 사용가능
+		
+		W(대문자 더블유) : 월~금요일 또는 가장 가까운 월,금요일을 설정할 때
+		
+		#(샵) : 몇번째 특정요일을 설정할 때
+	-->
+		
 	<!-- 테스트용 Job  -->
 	<bean id="testJob" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
 		<!-- 서비스 구현 객체의 빈 이름을 인자로 넣어 줍니다. -->
@@ -41,7 +72,7 @@
 	<bean id="testJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="testJob" />
 		<!-- CronTrigger를 사용하여 매일 1시에 실행되도록 지정 -->
-		<property name="cronExpression" value="0 0 12 * * ?" />
+		<property name="cronExpression" value="0 0 1 * * ?" />
 	</bean>	
 	
 	<!-- 테스트용 Job2  -->
@@ -57,7 +88,7 @@
 	<!-- 테스트용 Trigger2 -->
 	<bean id="testJobTrigger2" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="testJob2" />
-		<!-- CronTrigger를 사용하여 매일 1시에 실행되도록 지정 -->
+		<!-- CronTrigger를 사용하여 매일 4시 18분에 실행되도록 지정 -->
 		<property name="cronExpression" value="0 18 16 * * ?" />
 	</bean>
 	
