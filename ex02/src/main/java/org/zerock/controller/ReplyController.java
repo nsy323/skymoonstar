@@ -99,9 +99,11 @@ public class ReplyController {
 	public ResponseEntity<String> remove(@PathVariable("rno") Long rno){
 		log.info("remove ......... : " + rno);
 		
-		return service.remove(rno) == 1 ?
-				new ResponseEntity<> ("sucess", HttpStatus.OK) :
-				new	ResponseEntity<> (HttpStatus.INTERNAL_SERVER_ERROR);
+		int count = service.remove(rno);
+		
+		return (count == 1)? 
+				new ResponseEntity<>("success", HttpStatus.OK)
+				: new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	
 	/**

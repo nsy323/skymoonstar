@@ -59,13 +59,60 @@ console.log("JS TEST");
 
 var bnoValue = '<c:out value="${board.bno}"/>';
 
-//for replyService add test
+//for replyService add test 댓글 등록
 replyService.add(
-		{reply:"JS Test", replayer: "tester", bno : bnoValue},
+		{reply:"JS Test", replyer: "tester", bno : bnoValue},
 		function (result){
 			alert("result : " + result);	
 		}
 );
+
+//댓글 목록 조회
+replyService.getList(
+		{bno:bnoValue, page: 1},
+		function(list){
+			for(var i = 0,  len  = list.length||0; i < len; i++){
+				console.log(list[i]);	
+			}
+		}
+);
+
+//댓글 삭제
+replyService.remove(
+		46,
+		function(count){
+			console.log('count : ' + count);
+			
+			if(count == "success"){
+				alert("REMOVED");
+			}
+		}, function(err){
+			alert("ERROR.." + err);
+		}
+);
+
+//댓글수정
+replyService.modify(
+		{ 
+			rno : 17,
+			bno : bnoValue,
+			reply : "Modified Reply....."
+		},
+		function(result){
+			alert("수정 완료...");
+		}
+)
+
+//댓글조회
+replyService.get(
+		8,
+		function(data){
+			console.log(data);
+		}
+	
+)
+
+
 
 </script>
 	                          
