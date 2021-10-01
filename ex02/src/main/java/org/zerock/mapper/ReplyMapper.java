@@ -45,4 +45,11 @@ public interface ReplyMapper {
 			@Param("cri") Criteria cri,
 			@Param("bno") Long bno);
 	
+	/**
+	 * 게시물별 댓글 총 갯수
+	 * @param bno
+	 * @return
+	 */
+	public int getCountByBno(Long bno);
+	
 }

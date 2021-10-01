@@ -99,6 +99,17 @@ public class ReplyMapperTests {
 		list.forEach(reply -> log.info(reply));
 	}
 	
-	
+	//댓글조회 테스트(paging)
+	@Test
+	public void testList2() {
+		Criteria cri = new Criteria(1, 10);
+			
+		List<ReplyVO> replies = mapper.getListWithPaging(cri, 10901L);
+		
+		replies.forEach(reply -> log.info(reply));
+		
+		
+		
+	}
 
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.zerock.domain.Criteria;
+import org.zerock.domain.ReplyPageDTO;
 import org.zerock.domain.ReplyVO;
 import org.zerock.service.ReplyService;
 
@@ -60,7 +61,7 @@ public class ReplyController {
 			value="/pages/{bno}/{page}",
 			produces= { MediaType.APPLICATION_XML_VALUE,
 						MediaType.APPLICATION_JSON_UTF8_VALUE})
-	public ResponseEntity<List<ReplyVO>> getList(
+	public ResponseEntity<ReplyPageDTO> getList(
 			@PathVariable("bno") Long bno,
 			@PathVariable("page") int page){
 		
@@ -70,7 +71,7 @@ public class ReplyController {
 		
 		log.info("cri :" + cri);
 		
-		return new ResponseEntity<>(service.getList(cri, bno), HttpStatus.OK);
+		return new ResponseEntity<>(service.getListPage(cri, bno), HttpStatus.OK);
 	}
 	
 	/**
@@ -95,15 +96,13 @@ public class ReplyController {
 	 * @return
 	 */
 	@DeleteMapping(value="/{rno}",
-			produces = {MediaType.APPLICATION_JSON_UTF8_VALUE,MediaType.APPLICATION_XML_VALUE})
+			produces = {MediaType.TEXT_PLAIN_VALUE})
 	public ResponseEntity<String> remove(@PathVariable("rno") Long rno){
 		log.info("remove ......... : " + rno);
 		
-		int count = service.remove(rno);
-		
-		return (count == 1)? 
-				new ResponseEntity<>("success", HttpStatus.OK)
-				: new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		return service.remove(rno) == 1 ?
+				new ResponseEntity<> ("success" , HttpStatus.OK) :
+					new ResponseEntity<> (HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	
 	/**
