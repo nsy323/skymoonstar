@@ -11,7 +11,11 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.log4j.Log4j;
 
-
+/**
+ * aop 테스트
+ * @author 
+ *
+ */
 @Aspect
 @Component
 @Log4j
