@@ -107,9 +107,9 @@ public class ReplyMapperTests {
 		List<ReplyVO> replies = mapper.getListWithPaging(cri, 10901L);
 		
 		replies.forEach(reply -> log.info(reply));
-		
-		
-		
+	
 	}
+	
+	
 
 }

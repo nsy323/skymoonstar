@@ -133,5 +133,5 @@ public class BoardMapperTests {
 		list.forEach(b -> log.info(b));
 	}
 	
-	
+
 }
