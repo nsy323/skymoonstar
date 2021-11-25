@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+<!-- 로그인금지(403) 처리 담당 핸들러 빈 등록 -->
+<bean id="customAccessDenied" class="org.nsy.security.CustomAccessDeniedHandler"></bean>
+
+<!-- 로그인성공 후 처리 담당 핸들러 빈 등록 -->
+<bean id="customLoginSuccess" class="org.nsy.security.CustomLoginSuccessHandler"></bean>
+
+<!-- spring security encoding 지정
+<bean id="customPasswordEncoder" class="org.nsy.security.CustomNoOpPasswordEncoder"></bean>
+ -->
+ 
+<!-- 스프링 시큐리티 API에 포함된 BcryptPasswordEncoder로 password encoding -->
+ <bean id="bcryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"></bean>
+ 
+  <!--  커스텀 UserDetailsService을 이용한 방식 -->
+ <bean id="customUserDetailsService" class="org.nsy.security.CustomUserDetailsService"></bean>
+
+<!-- 권한별 로그인 완료 후 페이지 지정 -->
+<security:http>
+	<security:intercept-url pattern="/sample/all" access="permitAll" />
+	<security:intercept-url pattern="/sample/member" access="hasRole('ROLE_MEMBER')" />
+	<security:intercept-url pattern="/sample/admin" access="hasRole('ROLE_ADMIN')" />
+	
+<!-- 	<security:form-login /> -->
+	<!-- 로그인정보 삭제 후 /sample/admin과 같이 접근제한이  필요한 uri에 접근하면 customLogin.jsp로 이동  -->
+	<security:form-login login-page="/customLogin" authentication-success-handler-ref="customLoginSuccess"/>
+	
+	<!-- 
+		로그아웃시 customLogout.jsp로 이동
+		invalidate-session="true" (세션 무효화) 
+	 -->
+	<security:logout logout-url="/customLogout" invalidate-session="true" />
+	
+<!-- 	<security:access-denied-handler error-page="/accessError" /> -->
+	<!-- 접근제한 페이지로 이동 (/sample/admin에 member/member계정으로 로그인 할 경우 accessError.jsp로 이동) -->
+	<security:access-denied-handler ref="customAccessDenied"/>
+	
+	<!-- csrf토근 생성 비활성화시 true로 설정 -->
+<!-- 	<security:csrf disabled="true"/> -->
+
+	<!-- 데이터베이스를 이용한 자동로그인 : 지정된 이름의 테이블을 생성하면 지정된 sql문이 실행되면서 이를 처리하는 방식 -->
+	<security:remember-me data-source-ref="dataSource" token-validity-seconds="604800"/>
+	
+	<security:logout logout-url="/customLogout"
+		invalidate-session="true" delete-cookies="remember-me,JSESSIONID"/>
+</security:http>
+
+
+
+<!-- customUserDetailsService를 이용한 방식 -->
+<security:authentication-manager>
+	<security:authentication-provider user-service-ref="customUserDetailsService">
+	
+		<security:password-encoder ref="bcryptPasswordEncoder"/> <!-- 비밀번호 security 인코딩(스프링 시큐리티 API제공)  -->
+		
+	</security:authentication-provider>
+</security:authentication-manager>
+
+</beans>
