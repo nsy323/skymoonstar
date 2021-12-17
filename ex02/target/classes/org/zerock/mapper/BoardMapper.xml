@@ -59,7 +59,7 @@
 	<![CDATA[
 		select * from (
 			select /*+ INDEX_DESC(tbl_board pk_board) */ 
-				rownum rn, bno, title, writer, regDate, updateDate
+				rownum rn, bno, title, writer, regDate, updateDate, replyCnt
 			from tbl_board
 			where 
 	]]>
@@ -100,4 +100,12 @@
 		rownum < 10	
 	]]>
 	</select>
+	
+	<select id="updateReplyCnt">
+		update tbl_board 
+		set 
+			replycnt = replycnt + #{amount} 
+		where bno = #{bno}
+	</select> 
+	
 </mapper>

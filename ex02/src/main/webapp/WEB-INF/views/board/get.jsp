@@ -3,8 +3,10 @@
 
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 	<%@include file="../includes/header.jsp"  %>
+
             <div class="row">
                 <div class="col-lg-12">
                     <h1 class="page-header"> Board Read</h1>
@@ -41,8 +43,17 @@
                                   <input class="form-control" name="writer" readonly="readonly" value="<c:out value='${board.writer}'/>">
                               </div>
                               <button type="button" class="btn btn-default listBtn"><a href="/board/list">List</a></button>
-                              <button type="button" class="btn btn-default modBtn"><a href="/board/modify?bno=<c:out value='${board.bno }' />">modify</a></button>
-                           
+                              
+                              <sec:authentication property="principal" var="pinfo" />
+                              
+                              <sec:authorize access="isAuthenticated()">
+                              	<c:if test="${pinfo.username eq board.writer}">
+                              		<button type="button" class="btn btn-default modBtn">
+                              			<a href="/board/modify?bno=<c:out value='${board.bno }' />">modify</a>
+                              		</button>
+                              	</c:if>
+                           	  </sec:authorize>
+                           	  
 	                          <form id="actionForm" action="/board/list" method="get">
 	                          	<input type="hidden" name="pageNum" value="${cri.pageNum }">
 	                          	<input type="hidden" name="amount" value="${cri.amount }">
@@ -50,6 +61,7 @@
 	                          	<input type="hidden" name="type" value="${cri.type }">
                             	<input type="hidden" name="keyword" value="${cri.keyword }">
 	                          </form>
+
 
 <script type="text/javascript" src="/resources/js/reply.js"></script>
 <script>
@@ -202,15 +214,37 @@ $(document).ready(function(){
 	var modalRemoveBtn = $("#modalRemoveBtn");	//삭제버튼
 	var modalRegisterBtn = $("#modalRegisterBtn");	//등록버튼
 	
+	var replyer = null;	//사용자아이디
+	
+	//스크링 시큐리티를 이용하여 사용자명 replayer 변수에 담기
+	<sec:authorize access="isAuthenticated()">
+		replyer = '<sec:authentication property="principal.username" />';
+	</sec:authorize>
+	
 	//댓글등록 모달창 show
 	$("#addReplyBtn").on("click", function(){
 		modal.find("input").val("");	//input 값 초기화
+		modal.find("input[name='replyer']").val(replyer);		//댓글등록자
 		modalInputReplyDate.closest("div").hide(); //replyDate에 가장 가까운 div 숨기기
 		modal.find("button[id != 'modalCloseBtn']").hide(); //닫기버튼이 아닌 것만 숨기기
 		
 		modalRegisterBtn.show();	//등록버튼 보여주기
 		
 		$(".modal").modal("show");	//모달창 show
+	});
+	
+	/* 
+	
+	csrf토근의 값은 세션이 달라질 때마다 변함
+	ajax로 데이터 전송시 beforeSend를 이용해서 추가적인 헤더를 지정해서 전송해야 함,안그럼 403에러남
+	
+	*/
+	var csrfHeaderName = "${_csrf.headerName}";	//X-CSRF-TOKEN
+	var csrfTokenValue = "${_csrf.token}";		//f1378ba8-4414-4bd7-4be1a-b7d0a4f664942sub0
+	
+	//Ajax spring security header...(모든 Ajax 전송시 csrf토큰 같이 전송하도록 세팅, 매번 beforeSend하지않아도 됨)
+	$(document).ajaxSend(function(e, xhr, options){
+		xhr.setRequestHeader(csrfHeaderName, csrfTokenValue);
 	});
 	
 	//댓글등록 버튼 클릭
@@ -236,9 +270,27 @@ $(document).ready(function(){
 	
 	//댓글수정 버튼 클릭
 	$("#modalModBtn").on("click",function(e){
+		
+		var originalReplyer =  modalInputReplyer.val();
+			
 		var reply = {
 				rno : modal.data("rno"),
-				reply : modalInputReply.val()
+				reply : modalInputReply.val(),
+				replyer : originalReplyer
+		}
+		
+		if(!replyer){
+			alert("로그인 후 수정이 가능합니다.");
+			modal.modal("hide");
+			return;
+		}
+		
+		console.log("original Replyer : " + originalReplyer);
+		
+		if(replyer != originalReplyer){
+			alert("자신이 작성한 댓글만 수정이 가능합니다.");
+			modal.modal("hide");
+			return;
 		}
 		
 		replyService.modify(reply, function(result){
@@ -253,7 +305,26 @@ $(document).ready(function(){
 	$("#modalRemoveBtn").on("click", function(result){
 		var rno = modal.data("rno");
 		
-		replyService.remove(rno, function(result){
+		console.log("rno : " + rno);
+		console.log("replyer :" + replyer);
+		
+		if(!replyer){
+			alert("로그인 후 삭제가 가능합니다.");
+			modal.modal("hide");
+			return;
+		}
+		
+		var originalReplyer = modalInputReplyer.val();
+		
+		console.log("Original Replyer : " + modalInputReplyer.val());	//댓글의 원래 작성자
+		
+		if(replyer != originalReplyer){
+			alert("자신이 작성한 댓글만 삭제 가능합니다.");
+			modal.modal("hide");
+			return;
+		}
+		
+		replyService.remove(rno,originalReplyer, function(result){
 			alert(result);
 			modal.modal("hide");
 			showList(pageNum);
@@ -348,9 +419,78 @@ $(document).ready(function(){
 		modal.modal("hide");
 	});
 	
+	//첨부파일 목록 조회
+	$.getJSON("/board/getAttachList", {bno : bnoValue}, function(arr){
+		console.log("----------------");
+		console.log(arr);
+		
+		var str = "";
+		
+		$(arr).each(function(i, attach){
+			
+			//image인 경우
+			if(attach.fileType){
+				var fileCallPath = encodeURIComponent( attach.uploadPath+"\\" + "s_" + attach.uuid + "_" + attach.fileName );	//파일경로
+				
+				str += "<li data-path='"+attach.uploadPath+"' data-uuid='"+attach.uuid+"' data-filename='"+attach.fileName+"' data-filetype='"+attach.fileType+"'>";
+				str += "<div>";
+				str += "<img src='/display?fileName="+fileCallPath+"'";
+				str += "</div>";
+				str += "</li>";
+				
+			}else{	//file인 경우
+				str += "<li data-path='"+attach.uploadPath+"' data-uuid='"+attach.uuid+"' data-filename='"+attach.fileName+"' data-filetype='"+attach.fileType+"'>";
+				str += "<div>";
+				str += "<span>"+attach.fileName+"</span><br>";
+				str += "<img src='/resources/img/attach.png'>";
+				str += "</div>";
+				str += "</li>";
+			}
+		});
+		
+		$(".uploadResult ul").html(str);
+		
+	})// end of getJSON
 	
+	//첨부파일 목록 클릭시 파일일 경우 다운로드, 이미지일경우 원본이미지 보여주기
+	$(".uploadResult").on("click","li",function(e){
+		var liObj = $(this);	//<li>요소
+		
+		var path = encodeURIComponent( liObj.data("path") + "\\" + liObj.data("uuid") + "_" + liObj.data("filename") );	//파일경로
+		
+		//파일타입이 이미지인 경우
+		if(liObj.data("filetype")){
+			showImage(path.replace(new RegExp(/\\/g),"/"));
+			
+		}else{	//파일타입이 파일인 경우
+			self.location="/download?fileName="+ path;
+		}
+	});	
 	
-});
+	//원본이미지 혹은 주변 배경을 선택하면
+	$(".bigPictureWrapper").on("click", function(e){
+		
+		$(".bigPicture").animate({width:'0%', height:'0%'},1000); //이미지를 화면 중앙으로 작게 점차 줄여줍니다.(1초 동안)
+		
+		//원본 이미지창 닫기
+		setTimeout(function(){
+			$(".bigPictureWrapper").hide();
+		}, 1000);
+	});
+	
+});	// end of $(document).ready
+
+//원보이미지 보여주기
+function showImage(fileCallPath){
+	//alert(fileCallPath);
+	
+	/* display : flex; 속성은 이미지를 아래가 아닌 옆으로 조회해준다.  */
+	$(".bigPictureWrapper").css("display","flex").show();
+	
+	/* animate() 속성  : 부드럽게 이미지를 보여줌(1초) */
+	$(".bigPicture").html("<img src='/display?fileName="+fileCallPath+"'>").animate({width:'100%', height: '100%'}, 1000);
+}
+
 </script>
                             <!-- /.table-responsive -->
                         </div>
@@ -361,13 +501,37 @@ $(document).ready(function(){
                 <!-- /.col-lg-12 -->
             </div>
             <!-- /.row -->
-            
+
+<!-- 첨부파일 영역 -->
+ <div class="bigPictureWrapper">
+ 	<!-- 이미지 보여줄 영역 -->
+ 	<div class="bigPicture">
+ 	</div>
+ </div>
+ <div class="row">
+ 	<div class="col-lg-12">
+ 		<div class="panel panel-default">
+ 			<div class="panel-heading">Files</div>
+ 			<div class="panel-body">
+ 				<!-- 첨부파일 List조회 -->
+ 				<div class="uploadResult">
+ 					<ul>
+ 					</ul>
+ 				</div>
+ 			</div>
+ 		</div>
+ 	</div>
+ </div>
+ 
+<!-- 댓글달기 영역  -->     
 <div class='row'>
 	<div class="col-lg-12">
     	<div class="panel panel-default">
 	        <div class="panel-heading">
 	            <i class="fa fa-comments fa-fw"></i>Reply
-	            <button id="addReplyBtn" class="btn btn-primary btn-xs pull-right">New Reply</button>
+	            <sec:authorize access="isAuthenticated()">
+	            	<button id="addReplyBtn" class="btn btn-primary btn-xs pull-right">New Reply</button>
+	            </sec:authorize>
 	        </div>
 	    </div>
 	   	<div class="panel-body">

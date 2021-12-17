@@ -1,10 +1,9 @@
 package org.zerock.controller;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,6 +37,7 @@ public class ReplyController {
 			value="/new",
 			consumes="application/json",
 			produces= {MediaType.TEXT_PLAIN_VALUE})
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<String> create(@RequestBody ReplyVO vo){
 		
 		log.info("ReplyVO : " + vo);
@@ -95,10 +95,12 @@ public class ReplyController {
 	 * @param rno
 	 * @return
 	 */
-	@DeleteMapping(value="/{rno}",
-			produces = {MediaType.TEXT_PLAIN_VALUE})
-	public ResponseEntity<String> remove(@PathVariable("rno") Long rno){
+	@DeleteMapping(value="/{rno}")
+	@PreAuthorize("principal.username == #vo.replyer")
+	public ResponseEntity<String> remove(@RequestBody ReplyVO vo, @PathVariable("rno") Long rno){
 		log.info("remove ......... : " + rno);
+		
+		log.info("replyer : " + vo.getReply());
 		
 		return service.remove(rno) == 1 ?
 				new ResponseEntity<> ("success" , HttpStatus.OK) :
@@ -114,8 +116,8 @@ public class ReplyController {
 	@RequestMapping(
 			method = {RequestMethod.PUT, RequestMethod.PATCH},
 			value="/{rno}",
-			consumes = "application/json",
-			produces = {MediaType.TEXT_PLAIN_VALUE})
+			consumes = "application/json")
+	@PreAuthorize("principal.username == #vo.replyer")
 	public ResponseEntity<String> modify(
 			@PathVariable("rno") Long rno,
 			@RequestBody ReplyVO vo){

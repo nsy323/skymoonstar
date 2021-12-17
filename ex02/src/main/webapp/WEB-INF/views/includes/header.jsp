@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -11,7 +12,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>SB Admin 2 - Bootstrap Admin Theme</title>
+    <title>Skymoonstar</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="/resources/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -30,6 +31,9 @@
 
     <!-- Custom Fonts -->
     <link href="/resources/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    
+    <!-- 게시판 관련 css  -->
+    <link rel="stylesheet" type="text/css" href="/resources/dist/css/board.css">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -53,7 +57,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="index.html">SB Admin v2.0</a>
+                <a class="navbar-brand" href="index.html">Skymoonstar</a>
             </div>
             <!-- /.navbar-header -->
 
@@ -258,8 +262,11 @@
                         <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
                         </li>
                         <li class="divider"></li>
-                        <li><a href="login.html"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
-                        </li>
+                        
+                        <!-- 로그아웃 처리 -->
+                        <sec:authorize access="isAuthenticated()" >
+                        	<li><a href="/customLogout"><i class="fa fa-sign-out fa-fw"></i> Logout</a></li>
+                        </sec:authorize>
                     </ul>
                     <!-- /.dropdown-user -->
                 </li>
@@ -297,7 +304,7 @@
                             <!-- /.nav-second-level -->
                         </li>
                         <li>
-                            <a href="tables.html"><i class="fa fa-table fa-fw"></i> Tables</a>
+                            <a href="/board/list"><i class="fa fa-table fa-fw"></i> Tables</a>
                         </li>
                         <li>
                             <a href="forms.html"><i class="fa fa-edit fa-fw"></i> Forms</a>
@@ -362,9 +369,13 @@
                                 <li>
                                     <a href="blank.html">Blank Page</a>
                                 </li>
-                                <li>
-                                    <a href="login.html">Login Page</a>
-                                </li>
+                                
+                                <!-- 로그인 처리 -->
+                                <sec:authorize access="isAnonymous()">
+	                                <li>
+	                                    <a href="/customLogin">Login Page</a>
+	                                </li>
+	                            </sec:authorize>
                             </ul>
                             <!-- /.nav-second-level -->
                         </li>
