@@ -17,7 +17,7 @@
                <div class="form-group">
                		<label >Replyer</label>
                		<input class="form-control" name="replyer" value="replyer">
-               </div>
+               </div> 
                <div class="form-group">
                		<label >Reply Date</label>
                		<input class="form-control" name="replyDate" value="">
