@@ -108,7 +108,7 @@ public class BoardController {
 		
 		return "redirect:/board/list";
 	}
-	
+	 
 	/**
 	 * 게시물 삭제
 	 * @param bno
